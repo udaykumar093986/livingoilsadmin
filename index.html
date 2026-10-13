@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#118c80"><meta name="description" content="Shop quality cold-pressed oils from Living Oils.">
+<link rel="manifest" href="manifest.json"><link rel="icon" href="assets/icon.svg">
+<link rel="stylesheet" href="styles.css"><title>Living Oils | Pure Oils</title>
+</head>
+<body>
+<header class="topbar">
+  <button class="icon-btn mobile-menu" aria-label="Open menu" id="menuBtn">☰</button>
+  <img class="logo" src="assets/living-oils-logo.jpg" alt="Living Oils logo">
+  <div class="brand"><strong>Living Oils</strong><small>Pure by Nature. Blessed by Grace.</small></div>
+  <button class="header-cart" id="headerCart" aria-label="View shopping cart"><span class="cart-glyph">🛒</span><span>Cart</span><b id="headerCartCount">0</b></button>
+  <a class="location" href="#contact" aria-label="Store location">⌖</a>
+</header>
+<section class="hero">
+  <div class="hero-copy"><span class="eyebrow">PURE • NATURAL • TRUSTED</span><h1>Goodness in<br><em>every drop.</em></h1><p>Quality oils for your family, made with care.</p><a class="primary-btn" href="#products">Shop oils <span>→</span></a></div>
+  <div class="hero-art"><div class="sun"></div><img src="assets/oil-bottle.svg" alt="Golden oil bottle illustration"><span class="hero-stamp">100%<br><b>GOODNESS</b></span></div>
+</section>
+<main>
+  <div class="section-head" id="products"><div><span class="eyebrow">OUR COLLECTION</span><h2>Choose your oil</h2></div><label class="search"><span>⌕</span><input id="searchInput" placeholder="Search oils..." aria-label="Search products"></label></div>
+  <div class="filters" id="filters"><button class="filter active" data-filter="all">All products</button><button class="filter" data-filter="popular">Popular</button></div>
+  <div class="product-grid" id="productGrid"></div>
+</main>
+<section class="promise"><div class="promise-icon">✦</div><div><h3>Carefully selected. Simply better.</h3><p>Choose your favourites and place your order directly online.</p></div></section>
+<section class="store-showcase" id="our-store">
+  <div class="store-photo"><img src="assets/living-oils-store.jpg" alt="Living Oils shop, oil products and wood-pressing equipment" loading="lazy"></div>
+  <div class="store-copy"><span class="eyebrow">VISIT LIVING OILS</span><h2>From our store to your home.</h2><p>Explore our oils and place your order directly with our team.</p><a class="primary-btn store-cta" href="https://wa.me/919676274545?text=Hello%20Living%20Oils%2C%20I%20would%20like%20to%20know%20more%20about%20your%20oils.">Chat with us <span>↗</span></a></div>
+</section>
+<footer id="contact"><img src="assets/living-oils-logo.jpg" alt="Living Oils logo" class="footer-logo"><div><strong>Living Oils</strong><p>25/13/88, BV Nagar, Nellore</p><p>Questions? Contact our store team directly.</p></div><div style="margin-left:auto;display:flex;gap:12px;align-items:center;"><a class="footer-link" href="admin.html" title="Store Admin Dashboard">Admin ↗</a><a class="footer-link" href="#products">Browse oils ↑</a></div></footer>
+<nav class="bottom-nav"><a href="#products"><span>▦</span>Products</a><button id="cartNav"><span>🛒</span>Cart <b id="navCount">0</b></button><a href="#contact"><span>⚙</span>Contact</a></nav>
+<div class="toast" id="toast" role="status"></div>
+<div class="cart-backdrop" id="cartBackdrop"></div>
+<aside class="cart-panel" id="cartPanel" aria-label="Shopping cart" aria-hidden="true">
+  <div class="cart-head"><div><span class="eyebrow">YOUR SELECTION</span><h2>Your cart</h2></div><button id="closeCart" class="icon-btn" aria-label="Close cart">×</button></div>
+  <div id="cartItems" class="cart-items"></div>
+  <div class="cart-bottom"><div class="total-row"><span>Estimated total</span><strong id="cartTotal">₹0</strong></div><p class="cart-note">Free store pickup &amp; prompt local Nellore delivery.</p><button class="checkout-btn" id="checkoutBtn">Proceed to Checkout <span>→</span></button></div>
+</aside>
+<div class="customer-modal" id="customerModal" role="dialog" aria-modal="true" aria-labelledby="customerModalTitle" aria-hidden="true">
+  <div class="customer-modal-card">
+    <div class="customer-modal-head"><div><span class="eyebrow">ALMOST THERE</span><h2 id="customerModalTitle">Delivery details</h2></div><button id="closeCustomerModal" class="icon-btn" type="button" aria-label="Close delivery details">×</button></div>
+    <p class="customer-modal-note">Enter your delivery details to complete your order.</p>
+    <form id="customerDetailsForm">
+      <label for="customerName">Name</label>
+      <input id="customerName" name="name" type="text" autocomplete="name" required>
+      <label for="customerPhone">Phone number</label>
+      <input id="customerPhone" name="phone" type="tel" inputmode="tel" autocomplete="tel" maxlength="24" required>
+      <label for="customerAddress">Delivery address</label>
+      <textarea id="customerAddress" name="address" autocomplete="street-address" rows="3" required></textarea>
+      <button class="checkout-btn customer-submit" id="submitOrderBtn" type="submit">Place Order <span>✓</span></button>
+    </form>
+  </div>
+</div>
+<div class="customer-modal" id="orderSuccessModal" role="dialog" aria-modal="true" aria-labelledby="orderSuccessTitle" aria-hidden="true">
+  <div class="customer-modal-card" style="text-align: center;">
+    <div style="font-size: 52px; color: #20a765; margin: 8px 0 4px;">✓</div>
+    <span class="eyebrow" style="color: #20a765;">ORDER CONFIRMED</span>
+    <h2 id="orderSuccessTitle" style="margin: 8px 0 12px; font-size: 24px;">Thank You for Your Order!</h2>
+    <p style="color: var(--muted); font-size: 14px; margin-bottom: 16px;">Your order has been received and sent directly to the store admin dashboard.</p>
+    <div style="background: var(--cream); border: 1px solid var(--line); border-radius: 8px; padding: 14px; margin-bottom: 18px;">
+      <div style="font-size: 11px; color: var(--muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Order Reference ID</div>
+      <div id="successOrderId" style="font-size: 20px; font-weight: 800; color: var(--teal-dark); font-family: ui-monospace, monospace; margin-top: 4px;">LO-261013-0000</div>
+      <div id="successOrderTotal" style="font-size: 15px; font-weight: 700; color: var(--ink); margin-top: 6px;">Total: ₹0</div>
+    </div>
+    <p style="font-size: 13px; color: var(--muted); margin-bottom: 22px;">Our team will call or message your phone number (<strong id="successPhone"></strong>) to confirm dispatch and delivery.</p>
+    <button class="checkout-btn" id="closeSuccessBtn" type="button" style="justify-content: center;">Continue Shopping</button>
+  </div>
+</div>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="app.js"></script>
+</body></html>

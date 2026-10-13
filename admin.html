@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#118c80">
+  <link rel="icon" href="assets/icon.svg">
+  <title>Living Oils | Order Management Admin</title>
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <header class="admin-header">
+    <div class="header-container">
+      <div class="brand-section">
+        <img src="assets/living-oils-logo.jpg" alt="Living Oils Logo" class="admin-logo">
+        <div>
+          <div class="brand-title">
+            <span>Living Oils</span>
+            <span class="badge-tag">Admin</span>
+          </div>
+          <span class="brand-sub">Order Management &amp; Dispatch</span>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <!-- Live Connection Indicator -->
+        <button class="conn-status local" id="connStatusBtn" title="Click to configure Firebase">
+          <span class="dot"></span>
+          <span id="connStatusText">Local Storage Mode</span>
+        </button>
+
+        <!-- Sound Notification Toggle -->
+        <button class="btn" id="soundToggleBtn" title="Toggle audio chime on new orders">
+          <span id="soundIcon">🔔</span>
+          <span id="soundText">Sound On</span>
+        </button>
+
+        <!-- Desktop Browser Notifications Toggle -->
+        <button class="btn" id="desktopNotifBtn" title="Enable browser desktop notifications">
+          <span>📢</span>
+          <span id="desktopNotifText">Desktop Alerts</span>
+        </button>
+
+        <!-- Firebase Settings Button -->
+        <button class="btn" id="openSettingsBtn">
+          <span>⚙️</span>
+          <span>Firebase Setup</span>
+        </button>
+
+        <!-- Link to Storefront -->
+        <a class="btn btn-primary" href="index.html" target="_blank">
+          <span>🏪</span>
+          <span>View Store</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Dashboard -->
+  <main class="admin-main">
+    
+    <!-- KPI Metrics Row -->
+    <section class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-info">
+          <h4>Total Orders</h4>
+          <div class="metric-num" id="totalOrdersCount">0</div>
+        </div>
+        <div class="metric-icon">📦</div>
+      </div>
+
+      <div class="metric-card pending-card">
+        <div class="metric-info">
+          <h4>Pending Orders</h4>
+          <div class="metric-num" id="pendingOrdersCount">0</div>
+        </div>
+        <div class="metric-icon">⏳</div>
+      </div>
+
+      <div class="metric-card today-card">
+        <div class="metric-info">
+          <h4>Today's Orders</h4>
+          <div class="metric-num" id="todayOrdersCount">0</div>
+        </div>
+        <div class="metric-icon">📅</div>
+      </div>
+
+      <div class="metric-card revenue-card">
+        <div class="metric-info">
+          <h4>Total Revenue</h4>
+          <div class="metric-num" id="totalRevenueAmount">₹0</div>
+        </div>
+        <div class="metric-icon">₹</div>
+      </div>
+    </section>
+
+    <!-- Toolbar Filters & Search -->
+    <section class="toolbar-card">
+      <div class="toolbar-top">
+        <div class="search-box">
+          <span>🔍</span>
+          <input type="text" id="orderSearchInput" placeholder="Search by Order ID, Customer name, or Phone...">
+        </div>
+
+        <div class="toolbar-actions">
+          <select id="dateFilterSelect" class="btn">
+            <option value="all">All Dates</option>
+            <option value="today">Today</option>
+            <option value="week">Past 7 Days</option>
+            <option value="month">This Month</option>
+          </select>
+          <button class="btn" id="exportCsvBtn" title="Download all orders as CSV spreadsheet">
+            <span>📥</span>
+            <span>Export CSV</span>
+          </button>
+          <button class="btn" id="addSampleBtn" title="Create a sample order for testing">
+            <span>🧪</span>
+            <span>Add Test Order</span>
+          </button>
+          <button class="btn" id="refreshBtn" title="Refresh orders list">
+            <span>🔄</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Status Filter Tabs -->
+      <div class="filter-tabs" id="statusFilterTabs">
+        <button class="tab-btn active" data-status="all">
+          <span>All Orders</span>
+          <span class="tab-count" id="countAll">0</span>
+        </button>
+        <button class="tab-btn" data-status="pending">
+          <span>⏳ Pending</span>
+          <span class="tab-count" id="countPending">0</span>
+        </button>
+        <button class="tab-btn" data-status="confirmed">
+          <span>📦 Confirmed</span>
+          <span class="tab-count" id="countConfirmed">0</span>
+        </button>
+        <button class="tab-btn" data-status="delivered">
+          <span>✅ Delivered</span>
+          <span class="tab-count" id="countDelivered">0</span>
+        </button>
+        <button class="tab-btn" data-status="cancelled">
+          <span>❌ Cancelled</span>
+          <span class="tab-count" id="countCancelled">0</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Orders Table Container -->
+    <section class="orders-card">
+      <div class="table-wrapper">
+        <table class="orders-table" id="ordersTable">
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Date &amp; Time</th>
+              <th>Customer</th>
+              <th>Items</th>
+              <th>Total</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="ordersTableBody">
+            <!-- Dynamically populated rows -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Empty State display when no orders exist -->
+      <div class="empty-state" id="emptyState" style="display: none;">
+        <div class="icon">📋</div>
+        <h3>No orders found</h3>
+        <p>Orders submitted from the customer storefront or WhatsApp checkout will appear here in real time.</p>
+        <button class="btn btn-primary" id="emptyAddTestBtn">Add a Sample Order</button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Instant New Order Alert Modal -->
+  <div class="modal-overlay" id="newOrderAlertModal" aria-hidden="true" role="dialog">
+    <div class="modal-card" style="border-top: 6px solid #20a765; max-width: 520px;">
+      <div class="modal-head" style="background: #eafaf1;">
+        <h3 style="color: #08766c; display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 24px;">🚨</span>
+          <span>NEW ORDER RECEIVED!</span>
+        </h3>
+        <button class="modal-close" id="closeAlertModalBtn" aria-label="Dismiss alert">×</button>
+      </div>
+      <div class="modal-body" id="alertModalContent">
+        <!-- Injected order summary -->
+      </div>
+      <div class="modal-footer" style="background: #fbfcfb;">
+        <button class="btn" id="dismissAlertBtn">Dismiss</button>
+        <button class="btn btn-primary" id="viewAlertOrderBtn">View Full Details</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Order Details Modal -->
+  <div class="modal-overlay" id="orderDetailsModal" aria-hidden="true" role="dialog">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h3 id="modalOrderIdTitle">Order Details</h3>
+        <button class="modal-close" id="closeDetailsModalBtn" aria-label="Close modal">×</button>
+      </div>
+      <div class="modal-body" id="modalDetailsContent">
+        <!-- Dynamically injected order details -->
+      </div>
+      <div class="modal-footer">
+        <button class="btn" id="printOrderBtn">🖨️ Print Receipt</button>
+        <button class="btn btn-primary" id="closeDetailsDoneBtn">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase Setup & Settings Modal -->
+  <div class="modal-overlay" id="settingsModal" aria-hidden="true" role="dialog">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h3>Firebase Cloud Sync Settings</h3>
+        <button class="modal-close" id="closeSettingsModalBtn" aria-label="Close modal">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="guide-box">
+          <strong>Why connect Firebase?</strong>
+          <p>Connecting Firebase Realtime Database enables instant, cloud-based order syncing from customers' phones directly to your admin computer.</p>
+          <ol>
+            <li>Go to <a href="https://console.firebase.google.com" target="_blank" rel="noopener">Firebase Console</a> and click <strong>Create a project</strong>.</li>
+            <li>In the left sidebar, click <strong>Build &gt; Realtime Database</strong> and click <strong>Create Database</strong> (start in <em>Test mode</em>).</li>
+            <li>Go to <strong>Project Settings</strong> (gear icon) &gt; <strong>General</strong> &gt; Under <em>Your apps</em>, add a Web app (<code>&lt;/&gt;</code>) and copy the <code>firebaseConfig</code> object.</li>
+            <li>Paste your configuration JSON below and click <strong>Save &amp; Connect</strong>.</li>
+          </ol>
+        </div>
+
+        <div class="form-group">
+          <label for="firebaseConfigInput">Firebase Configuration (JSON or JavaScript object)</label>
+          <textarea id="firebaseConfigInput" rows="7" placeholder='{
+  "apiKey": "AIzaSy...",
+  "authDomain": "living-oils-xxxx.firebaseapp.com",
+  "databaseURL": "https://living-oils-xxxx-default-rtdb.firebaseio.com",
+  "projectId": "living-oils-xxxx",
+  "storageBucket": "living-oils-xxxx.appspot.com",
+  "messagingSenderId": "...",
+  "appId": "..."
+}'></textarea>
+        </div>
+
+        <div class="form-group" style="display: flex; gap: 10px; margin-top: 14px;">
+          <button class="btn btn-primary" id="saveFirebaseBtn" style="flex: 1;">Save &amp; Connect</button>
+          <button class="btn" id="testFirebaseBtn">Test Connection</button>
+          <button class="btn btn-danger" id="clearFirebaseBtn" title="Reset to Local Storage mode">Disconnect</button>
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid var(--line); margin: 20px 0;">
+
+        <div class="form-group">
+          <label>Data Management</label>
+          <button class="btn btn-danger btn-sm" id="clearAllOrdersBtn">🗑️ Clear All Orders</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="admin-toast" id="adminToast" role="status"></div>
+
+  <!-- Firebase SDK & Scripts -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <script src="admin.js"></script>
+
+</body>
+</html>
