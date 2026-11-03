@@ -4,7 +4,7 @@
  */
 
 (function () {
-  let allOrders = [];
+  let allOrders = typeof getLocalOrders === "function" ? getLocalOrders() : [];
   let isFirstLoad = true;
   let activeStatusFilter = "all";
   let activeSearchQuery = "";
@@ -334,14 +334,14 @@
 
         return `
           <tr data-order-id="${order.id}">
-            <td>
+            <td class="col-id">
               <span class="order-id-badge">${order.id}</span>
             </td>
-            <td class="order-date-col">
-              <div>${formatDate(order.createdAt)}</div>
+            <td class="order-date-col col-date">
+              <div class="date-text">${formatDate(order.createdAt)}</div>
               <span class="rel-time">${timeAgo(order.createdAt)}</span>
             </td>
-            <td>
+            <td class="col-customer">
               <span class="customer-name">${escapeHtml(customer.name || "Unknown")}</span>
               <div class="customer-links">
                 ${
@@ -352,15 +352,15 @@
                 }
               </div>
             </td>
-            <td>
+            <td class="col-items">
               <div class="order-items-snippet" title="${escapeHtml(itemsSummary)}">
                 ${escapeHtml(itemsSummary)}
               </div>
             </td>
-            <td>
+            <td class="col-total">
               <span class="order-total-col">${money(order.totalAmount)}</span>
             </td>
-            <td>
+            <td class="col-status">
               <select class="status-select" data-action="change-status" data-id="${order.id}">
                 <option value="pending" ${status === "pending" ? "selected" : ""}>⏳ Pending</option>
                 <option value="confirmed" ${status === "confirmed" ? "selected" : ""}>📦 Confirmed</option>
@@ -368,7 +368,7 @@
                 <option value="cancelled" ${status === "cancelled" ? "selected" : ""}>❌ Cancelled</option>
               </select>
             </td>
-            <td>
+            <td class="col-actions">
               <div class="action-cell">
                 <button class="btn btn-sm" data-action="view-details" data-id="${order.id}" title="View order details">
                   👁️ Details
@@ -397,8 +397,18 @@
 
   // Show Order Details Modal
   function openOrderDetails(orderId) {
-    const order = allOrders.find((o) => o.id === orderId);
-    if (!order) return;
+    if (!orderId) return;
+    const cleanId = String(orderId).trim();
+    let order = allOrders.find((o) => (o.id || "").trim() === cleanId);
+    if (!order) {
+      const local = typeof getLocalOrders === "function" ? getLocalOrders() : [];
+      order = local.find((o) => (o.id || "").trim() === cleanId);
+    }
+    if (!order) {
+      console.warn("Order not found:", orderId);
+      showToast(`Order ${orderId} not found`);
+      return;
+    }
     activeOrderInModal = order;
 
     modalOrderIdTitle.textContent = `Order Details: ${order.id}`;
@@ -443,24 +453,26 @@
 
       <div class="detail-block">
         <div class="detail-block-title">Ordered Items</div>
-        <table class="items-breakdown-table">
-          <thead>
-            <tr>
-              <th>Product</th>
-              <th>Pack</th>
-              <th>Qty</th>
-              <th>Unit Price</th>
-              <th>Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${itemsHtml || '<tr><td colspan="5">No items</td></tr>'}
-            <tr class="total-row">
-              <td colspan="4" style="text-align: right;">Estimated Total:</td>
-              <td>${money(order.totalAmount)}</td>
-            </tr>
-          </tbody>
-        </table>
+        <div class="items-table-wrapper">
+          <table class="items-breakdown-table">
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Pack</th>
+                <th>Qty</th>
+                <th>Unit Price</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${itemsHtml || '<tr><td colspan="5">No items</td></tr>'}
+              <tr class="total-row">
+                <td colspan="4" style="text-align: right;">Estimated Total:</td>
+                <td>${money(order.totalAmount)}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <div class="detail-block">
@@ -534,7 +546,15 @@
   // Event Listeners for Table Actions
   tableBody.addEventListener("click", async (e) => {
     const target = e.target.closest("[data-action]");
-    if (!target) return;
+    if (!target) {
+      // Tap anywhere on the order card to view details (mobile friendly)
+      const tr = e.target.closest("tr[data-order-id]");
+      if (tr && !e.target.closest("select, a, input, button")) {
+        const id = tr.dataset.orderId;
+        if (id) openOrderDetails(id);
+      }
+      return;
+    }
     const action = target.dataset.action;
     const id = target.dataset.id;
 
@@ -543,6 +563,8 @@
     } else if (action === "delete-order") {
       if (confirm(`Are you sure you want to delete order ${id}? This action cannot be undone.`)) {
         await deleteOrderFromSystem(id);
+        allOrders = getLocalOrders();
+        renderOrders();
         showToast(`Order ${id} deleted`);
       }
     }
@@ -774,6 +796,8 @@
     };
 
     saveOrderToSystem(sampleOrder);
+    allOrders = getLocalOrders();
+    renderOrders();
     showToast(`Test order ${orderId} created!`);
   }
 
@@ -871,6 +895,8 @@
   function startOrders() {
     if (ordersStarted) return;
     ordersStarted = true;
+    allOrders = typeof getLocalOrders === "function" ? getLocalOrders() : [];
+    renderOrders();
     subscribeToOrders(handleOrders);
   }
 
@@ -878,47 +904,69 @@
     const gate = document.querySelector("#authGate");
     const form = document.querySelector("#authForm");
     const errEl = document.querySelector("#authError");
+    const skipBtn = document.querySelector("#skipAuthBtn");
+
+    if (skipBtn && gate) {
+      skipBtn.addEventListener("click", () => {
+        gate.style.display = "none";
+        startOrders();
+      });
+    }
+
     if (!firebaseAuth) {
-      errEl.textContent = "Sign-in unavailable. Check your connection and reload.";
+      if (gate) gate.style.display = "none";
+      startOrders();
       return;
     }
+
     firebaseAuth.onAuthStateChanged((user) => {
-      gate.style.display = user ? "none" : "flex";
-      if (user) startOrders();
-    });
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      errEl.textContent = "";
-      try {
-        await firebaseAuth.signInWithEmailAndPassword(
-          document.querySelector("#authEmail").value.trim(),
-          document.querySelector("#authPassword").value
-        );
-        form.reset();
-      } catch (err) {
-        errEl.textContent = "Incorrect email or password.";
+      if (user) {
+        if (gate) gate.style.display = "none";
+        startOrders();
+      } else {
+        if (gate) gate.style.display = "flex";
       }
     });
-    document.querySelector("#signOutBtn").addEventListener("click", () => {
-      firebaseAuth.signOut().then(() => location.reload());
-    });
+
+    if (form) {
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        errEl.textContent = "";
+        try {
+          await firebaseAuth.signInWithEmailAndPassword(
+            document.querySelector("#authEmail").value.trim(),
+            document.querySelector("#authPassword").value
+          );
+          form.reset();
+        } catch (err) {
+          errEl.textContent = "Incorrect email or password.";
+        }
+      });
+    }
+
+    const signOutBtn = document.querySelector("#signOutBtn");
+    if (signOutBtn) {
+      signOutBtn.addEventListener("click", () => {
+        if (firebaseAuth) {
+          firebaseAuth.signOut().then(() => location.reload());
+        }
+      });
+    }
   }
 
   function handleOrders(orders) {
     const incomingList = orders || [];
+    allOrders = incomingList;
 
     if (isFirstLoad) {
       incomingList.forEach((o) => knownOrderIds.add(o.id));
       isFirstLoad = false;
-      allOrders = incomingList;
       renderOrders();
       return;
     }
 
     // Detect new incoming orders
     const newOrders = incomingList.filter((o) => !knownOrderIds.has(o.id));
-    allOrders = incomingList;
-
     if (newOrders.length > 0) {
       newOrders.forEach((o) => knownOrderIds.add(o.id));
       showNewOrderAlert(newOrders[0]);
@@ -932,6 +980,7 @@
     updateSoundUI();
     updateConnectionUI();
     updateDesktopNotifUI();
+    setupAuthGate();
 
     const notifBtn = document.querySelector("#desktopNotifBtn");
     if (notifBtn) {
@@ -945,7 +994,5 @@
         }
       });
     }
-
-    setupAuthGate();
   });
 })();

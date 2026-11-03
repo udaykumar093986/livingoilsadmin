@@ -28,36 +28,36 @@
         <!-- Live Connection Indicator -->
         <button class="conn-status local" id="connStatusBtn" title="Click to configure Firebase">
           <span class="dot"></span>
-          <span id="connStatusText">Local Storage Mode</span>
+          <span id="connStatusText" class="btn-text">Local Storage Mode</span>
         </button>
 
         <!-- Sound Notification Toggle -->
         <button class="btn" id="soundToggleBtn" title="Toggle audio chime on new orders">
           <span id="soundIcon">🔔</span>
-          <span id="soundText">Sound On</span>
+          <span id="soundText" class="btn-text">Sound On</span>
         </button>
 
         <!-- Desktop Browser Notifications Toggle -->
         <button class="btn" id="desktopNotifBtn" title="Enable browser desktop notifications">
           <span>📢</span>
-          <span id="desktopNotifText">Desktop Alerts</span>
+          <span id="desktopNotifText" class="btn-text">Desktop Alerts</span>
         </button>
 
         <!-- Firebase Settings Button -->
-        <button class="btn" id="openSettingsBtn">
+        <button class="btn" id="openSettingsBtn" title="Firebase Cloud Sync Setup">
           <span>⚙️</span>
-          <span>Firebase Setup</span>
+          <span class="btn-text">Firebase Setup</span>
         </button>
 
-        <button class="btn" id="signOutBtn" type="button" title="Sign out">
+        <button class="btn" id="signOutBtn" type="button" title="Sign out of Admin">
           <span>🚪</span>
-          <span>Sign out</span>
+          <span class="btn-text">Sign out</span>
         </button>
 
         <!-- Link to Storefront -->
-        <a class="btn btn-primary" href="https://www.livingoils.in" target="_blank" rel="noopener">
+        <a class="btn btn-primary" href="https://www.livingoils.in" target="_blank" rel="noopener" title="Open Customer Store">
           <span>🏪</span>
-          <span>View Store</span>
+          <span class="btn-text">View Store</span>
         </a>
       </div>
     </div>
@@ -110,7 +110,7 @@
         </div>
 
         <div class="toolbar-actions">
-          <select id="dateFilterSelect" class="btn">
+          <select id="dateFilterSelect" class="btn" title="Filter orders by date">
             <option value="all">All Dates</option>
             <option value="today">Today</option>
             <option value="week">Past 7 Days</option>
@@ -118,11 +118,11 @@
           </select>
           <button class="btn" id="exportCsvBtn" title="Download all orders as CSV spreadsheet">
             <span>📥</span>
-            <span>Export CSV</span>
+            <span class="btn-text">Export CSV</span>
           </button>
           <button class="btn" id="addSampleBtn" title="Create a sample order for testing">
             <span>🧪</span>
-            <span>Add Test Order</span>
+            <span class="btn-text">Add Test Order</span>
           </button>
           <button class="btn" id="refreshBtn" title="Refresh orders list">
             <span>🔄</span>
@@ -285,6 +285,7 @@
       <input id="authPassword" type="password" autocomplete="current-password" required style="padding:11px;border:1px solid #cfdad5;border-radius:10px;font-size:15px">
       <div id="authError" style="color:#b30e2a;font-size:13px;font-weight:700;min-height:18px"></div>
       <button type="submit" class="btn btn-primary" style="justify-content:center;padding:12px">Sign in</button>
+      <button type="button" id="skipAuthBtn" class="btn" style="justify-content:center;padding:10px;margin-top:2px;">Continue Offline / Local Mode</button>
     </form>
   </div>
 

@@ -188,34 +188,41 @@ function subscribeToOrders(callback) {
   let currentOrders = getLocalOrders();
   callback(currentOrders);
 
+  let onValueChange = null;
+  let ordersRef = null;
+
   // If Firebase is available, listen to Realtime Database
   if (isFirebaseReady && firebaseDb) {
-    const ordersRef = firebaseDb.ref("orders");
-    const onValueChange = (snapshot) => {
+    ordersRef = firebaseDb.ref("orders");
+    onValueChange = (snapshot) => {
       const data = snapshot.val();
       if (data) {
         // Convert object map to sorted array by createdAt desc
         const list = Object.values(data);
-        list.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
-        currentOrders = list;
-        setLocalOrders(list);
-        callback(list);
+        const local = getLocalOrders();
+        // Merge Firebase orders with local orders so nothing is wiped
+        const mergedMap = new Map();
+        list.forEach((o) => { if (o && o.id) mergedMap.set(o.id, o); });
+        local.forEach((o) => { if (o && o.id && !mergedMap.has(o.id)) mergedMap.set(o.id, o); });
+        const mergedList = Array.from(mergedMap.values());
+        mergedList.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+        currentOrders = mergedList;
+        setLocalOrders(mergedList);
+        callback(mergedList);
       } else {
-        // Empty in Firebase
-        callback([]);
+        // Empty in Firebase - fall back to local orders, do not erase
+        const local = getLocalOrders();
+        callback(local);
       }
     };
 
-    ordersRef.on("value", onValueChange);
-
-    // Return unsubscribe function
-    return () => {
-      localSubscribers.delete(callback);
-      ordersRef.off("value", onValueChange);
-    };
+    ordersRef.on("value", onValueChange, (err) => {
+      console.warn("Firebase orders read notice (using local storage):", err.message || err);
+      callback(getLocalOrders());
+    });
   }
 
-  // Fallback: Listen to BroadcastChannel and window storage events
+  // Always listen to BroadcastChannel and window storage events
   const onBroadcast = (event) => {
     if (event.data && (event.data.type === "NEW_ORDER" || event.data.type === "UPDATE_ORDER" || event.data.type === "ORDERS_CHANGED")) {
       notifyLocalSubscribers();
@@ -235,7 +242,12 @@ function subscribeToOrders(callback) {
 
   return () => {
     localSubscribers.delete(callback);
-    if (ordersChannel) ordersChannel.removeEventListener("message", onBroadcast);
+    if (ordersRef && onValueChange) {
+      ordersRef.off("value", onValueChange);
+    }
+    if (ordersChannel) {
+      ordersChannel.removeEventListener("message", onBroadcast);
+    }
     window.removeEventListener("storage", onStorage);
   };
 }
