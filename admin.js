@@ -866,6 +866,66 @@
   });
 
   const knownOrderIds = new Set();
+  let ordersStarted = false;
+
+  function startOrders() {
+    if (ordersStarted) return;
+    ordersStarted = true;
+    subscribeToOrders(handleOrders);
+  }
+
+  function setupAuthGate() {
+    const gate = document.querySelector("#authGate");
+    const form = document.querySelector("#authForm");
+    const errEl = document.querySelector("#authError");
+    if (!firebaseAuth) {
+      errEl.textContent = "Sign-in unavailable. Check your connection and reload.";
+      return;
+    }
+    firebaseAuth.onAuthStateChanged((user) => {
+      gate.style.display = user ? "none" : "flex";
+      if (user) startOrders();
+    });
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      errEl.textContent = "";
+      try {
+        await firebaseAuth.signInWithEmailAndPassword(
+          document.querySelector("#authEmail").value.trim(),
+          document.querySelector("#authPassword").value
+        );
+        form.reset();
+      } catch (err) {
+        errEl.textContent = "Incorrect email or password.";
+      }
+    });
+    document.querySelector("#signOutBtn").addEventListener("click", () => {
+      firebaseAuth.signOut().then(() => location.reload());
+    });
+  }
+
+  function handleOrders(orders) {
+    const incomingList = orders || [];
+
+    if (isFirstLoad) {
+      incomingList.forEach((o) => knownOrderIds.add(o.id));
+      isFirstLoad = false;
+      allOrders = incomingList;
+      renderOrders();
+      return;
+    }
+
+    // Detect new incoming orders
+    const newOrders = incomingList.filter((o) => !knownOrderIds.has(o.id));
+    allOrders = incomingList;
+
+    if (newOrders.length > 0) {
+      newOrders.forEach((o) => knownOrderIds.add(o.id));
+      showNewOrderAlert(newOrders[0]);
+    }
+
+    renderOrders();
+  }
 
   // Initialize and Subscribe
   window.addEventListener("DOMContentLoaded", () => {
@@ -886,28 +946,6 @@
       });
     }
 
-    // Subscribe to real-time order changes
-    subscribeToOrders((orders) => {
-      const incomingList = orders || [];
-
-      if (isFirstLoad) {
-        incomingList.forEach((o) => knownOrderIds.add(o.id));
-        isFirstLoad = false;
-        allOrders = incomingList;
-        renderOrders();
-        return;
-      }
-
-      // Detect new incoming orders
-      const newOrders = incomingList.filter((o) => !knownOrderIds.has(o.id));
-      allOrders = incomingList;
-
-      if (newOrders.length > 0) {
-        newOrders.forEach((o) => knownOrderIds.add(o.id));
-        showNewOrderAlert(newOrders[0]);
-      }
-
-      renderOrders();
-    });
+    setupAuthGate();
   });
 })();

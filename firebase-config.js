@@ -23,6 +23,7 @@ const DEFAULT_FIREBASE_CONFIG = {
 
 let firebaseApp = null;
 let firebaseDb = null;
+let firebaseAuth = null;
 let isFirebaseReady = false;
 
 /**
@@ -63,6 +64,7 @@ function initFirebase(customConfig = null) {
         firebaseApp = firebase.apps[0];
       }
       firebaseDb = firebase.database();
+      firebaseAuth = typeof firebase.auth === "function" ? firebase.auth() : null;
       isFirebaseReady = true;
       console.log("Firebase Realtime Database initialized successfully.");
       return true;

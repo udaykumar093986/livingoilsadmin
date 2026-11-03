@@ -49,8 +49,13 @@
           <span>Firebase Setup</span>
         </button>
 
+        <button class="btn" id="signOutBtn" type="button" title="Sign out">
+          <span>🚪</span>
+          <span>Sign out</span>
+        </button>
+
         <!-- Link to Storefront -->
-        <a class="btn btn-primary" href="https://livingoils.netlify.app/" target="_blank">
+        <a class="btn btn-primary" href="https://www.livingoils.in" target="_blank" rel="noopener">
           <span>🏪</span>
           <span>View Store</span>
         </a>
@@ -270,9 +275,23 @@
   <!-- Toast Container -->
   <div class="admin-toast" id="adminToast" role="status"></div>
 
+  <div id="authGate" style="position:fixed;inset:0;z-index:99999;background:#0f1f1c;display:flex;align-items:center;justify-content:center;padding:20px">
+    <form id="authForm" style="background:#fff;border-radius:16px;padding:28px;width:100%;max-width:380px;display:grid;gap:10px;font-family:inherit">
+      <h2 style="margin:0">Admin sign in</h2>
+      <p style="margin:0 0 6px;color:#5b6b64;font-size:14px">Living Oils order management</p>
+      <label for="authEmail">Email</label>
+      <input id="authEmail" type="email" autocomplete="username" required style="padding:11px;border:1px solid #cfdad5;border-radius:10px;font-size:15px">
+      <label for="authPassword">Password</label>
+      <input id="authPassword" type="password" autocomplete="current-password" required style="padding:11px;border:1px solid #cfdad5;border-radius:10px;font-size:15px">
+      <div id="authError" style="color:#b30e2a;font-size:13px;font-weight:700;min-height:18px"></div>
+      <button type="submit" class="btn btn-primary" style="justify-content:center;padding:12px">Sign in</button>
+    </form>
+  </div>
+
   <!-- Firebase SDK & Scripts -->
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
   <script src="firebase-config.js"></script>
   <script src="admin.js"></script>
 
